@@ -1,0 +1,139 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: router-postgres
+    environment:
+      POSTGRES_USER: router
+      POSTGRES_PASSWORD: router
+      POSTGRES_DB: router
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U router"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - router-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: router-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - router-network
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "5555:8080"
+      - "7777:7777"
+    environment:
+      DATABASE_URL: "postgresql://router:router@postgres:5432/router?sslmode=disable"
+      LICENSE_FILE: /app/config/license.jwt
+      LICENSE_PUBLIC_KEY_FILE: /app/config/public_key.pem
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      XAI_API_KEY: ${XAI_API_KEY:-}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-}
+      GATEWAY_ADMIN_API_KEY: ${GATEWAY_ADMIN_API_KEY:-}
+
+      CONFIG_PATH: /app/config.yaml
+      DYNAMIC_CONFIG_SEED_MODE: "if_empty" # "always" | "if_empty" | "never"
+
+      LOG_ENC_ACTIVE_VERSION: "v1"
+      LOG_ENC_KEY_V1: "36a2YYgm9qJmjkEyiA8CELbSp8dN2+3ej1xmU2A2fZU="
+
+      GRPC_TLS_CERT: /app/config/grpc.crt
+      GRPC_TLS_KEY: /app/config/grpc.key
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./config:/app/config
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - router-network
+    restart: unless-stopped
+
+  event-consumer:
+    build:
+      context: ../Redis_event_consumer
+      dockerfile: Dockerfile
+    container_name: router-event-consumer
+    depends_on:
+      redis:
+        condition: service_started
+    ports:
+      - "8081:8080"
+    environment:
+      REDIS_URL: "redis://redis:6379"
+      STREAM_NAMES: "budget:warn,compliance:retention"
+      CONSUMER_GROUP: "platform-alerts"
+      CONSUMER_NAME: "consumer-1"
+      ENABLE_SLACK: ${ENABLE_SLACK:-false}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      ENABLE_WEBHOOK: ${ENABLE_WEBHOOK:-false}
+      WEBHOOK_URL: ${WEBHOOK_URL:-}
+      WEBHOOK_BEARER_TOKEN: ${WEBHOOK_BEARER_TOKEN:-}
+      ENABLE_DLQ: "true"
+      DLQ_STREAM_NAME: "platform:events:dlq"
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      LOG_LEVEL: "info"
+      HEALTH_ADDR: ":8080"
+    networks:
+      - router-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    depends_on:
+      gateway:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+    environment:
+      GATEWAY_BASE_URL: "http://gateway:8080"
+      GATEWAY_ADMIN_API_KEY: ${GATEWAY_ADMIN_API_KEY:-}
+      CONSUMER_API_URL: "http://event-consumer:8080"
+      NODE_ENV: "production"
+      # Keycloak configuration for OIDC
+      # KEYCLOAK_ISSUER_PUBLIC: used by browser for login/callback (http://localhost from host)
+      KEYCLOAK_ISSUER_PUBLIC: "http://localhost:8085/realms/router"
+      # KEYCLOAK_ISSUER_INTERNAL: used by server-side token exchange (http://host.docker.internal from container)
+      KEYCLOAK_ISSUER_INTERNAL: "http://host.docker.internal:8085/realms/router"
+      # Client ID
+      KEYCLOAK_CLIENT_ID: "router-ui"
+    networks:
+      - router-network
+    restart: unless-stopped
+
+networks:
+  router-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+ 

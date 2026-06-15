@@ -1,0 +1,30 @@
+bin/
+.env
+!.env.example
+*.exe
+
+starting.txt
+.claude/
+# Certificates and keys
+*.crt
+*.key
+*.pem
+*.jwt
+/jwks/
+
+# Internal review artifacts
+db_review/
+
+# Internal artifacts
+*.vec.json
+*.vec
+specs/
+openspec/
+
+# Config with real values (use config.example.yaml)
+config.yaml
+!config.example.yaml
+!config.jwt-example.yaml
+
+go.work
+go.work.sum

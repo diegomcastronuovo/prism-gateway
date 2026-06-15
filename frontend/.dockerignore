@@ -1,0 +1,60 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Local development
+.env
+.env.local
+.env.*.local
+.DS_Store
+
+# Dependencies (installed in builder, not needed in runtime)
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Build artifacts and cache (rebuilt in builder)
+.next
+out/
+dist/
+build/
+
+# Development files
+.vscode
+.idea
+*.swp
+*.swo
+.eslintcache
+.stylelintcache
+
+# Tests and coverage (not needed in production)
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+coverage/
+.jest
+jest.config.js
+
+# Documentation
+*.md
+docs/
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Package manager lock files (installed in builder)
+# Note: We copy these to builder, but don't need in runtime image
+
+# Other
+LICENSE
+.turbo
+.husky

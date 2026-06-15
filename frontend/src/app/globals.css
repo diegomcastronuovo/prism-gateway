@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ─── Light mode ─── */
+  :root {
+    --background: 0 0% 99%;
+    --foreground: 220 15% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 9%;
+    /* Primary defaults to magenta (brand color); overridden at runtime by accent switcher */
+    --primary: 326 78% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 13% 94%;
+    --secondary-foreground: 220 15% 20%;
+    --muted: 220 13% 94%;
+    --muted-foreground: 220 10% 46%;
+    --accent: 220 13% 92%;
+    --accent-foreground: 220 15% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 88%;
+    --input: 220 13% 91%;
+    --ring: 326 78% 56%;
+    --radius: 0.75rem;
+  }
+
+  /* ─── Dark mode — Kairos / Arkana deck palette ─── */
+  /*
+   * Color tokens from the deck:
+   *   background  →  #0e0e0e  (--dark)
+   *   card        →  #141414  (--dark2)
+   *   popover     →  #1a1a1a  (--dark3 ~)
+   *   foreground  →  #FAFAFA  (--white)
+   *   muted-fg    →  #8a8a8a  (--gray)
+   *   primary     →  #E6399B  (--magenta)
+   *   ring        →  #E6399B  (--magenta)
+   *   border      →  rgba(255,255,255,0.08) on #0e0e0e ≈ hsl(0 0% 14%)
+   */
+  .dark {
+    --background: 0 0% 5.5%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 14%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 14%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 326 78% 56%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 88%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 62%;
+    --accent: 0 0% 22%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 65% 48%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 24%;
+    --input: 0 0% 18%;
+    --ring: 326 78% 56%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* ─── Subtle grid texture in dark mode (matching deck's bg-grid) ─── */
+  .dark body {
+    background-image:
+      linear-gradient(rgba(145, 255, 209, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(145, 255, 209, 0.025) 1px, transparent 1px);
+    background-size: 64px 64px;
+    background-attachment: fixed;
+  }
+}

@@ -1,0 +1,57 @@
+services:
+  gateway:
+    image: ghcr.io/diegomcastronuovo/prism-gateway:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgres://prism:prism@postgres:5432/prism?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./config.example.yaml:/app/config.yaml:ro
+      - ./.env:/app/.env:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: prism
+      POSTGRES_PASSWORD: prism
+      POSTGRES_DB: prism
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prism"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - GATEWAY_URL=http://gateway:8080
+    depends_on:
+      - gateway
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:

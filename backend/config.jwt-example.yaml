@@ -1,0 +1,179 @@
+# Example configuration for JWT + RBAC authentication
+# This file demonstrates how to configure the LLM Gateway with JWT authentication
+
+# Authentication and authorization settings
+auth:
+  # Mode: "api_key" (default), "jwt", or "both"
+  # - api_key: Only X-API-Key header (backward compatible)
+  # - jwt: Only JWT tokens (recommended for production)
+  # - both: Accept both (recommended for migration)
+  mode: "both"
+
+  # JWT configuration (only used if mode is "jwt" or "both")
+  jwt:
+    # Issuer: OIDC issuer URL (must match JWT 'iss' claim)
+    issuer: "https://keycloak.company.com/realms/llm-gateway"
+
+    # Audience: Expected audience (must match JWT 'aud' claim)
+    audience: "llm-gateway"
+
+    # JWKS URL: Public key endpoint (auto-derived if empty)
+    # For Keycloak: <issuer>/protocol/openid-connect/certs
+    # For Auth0: https://<domain>/.well-known/jwks.json
+    # For Cognito: https://cognito-idp.<region>.amazonaws.com/<pool-id>/.well-known/jwks.json
+    jwks_url: ""  # Leave empty for auto-discovery
+
+    # Clock skew tolerance in seconds (prevents false rejections)
+    clock_skew_seconds: 60
+
+    # JWKS cache TTL in minutes (balance performance vs key rotation)
+    cache_ttl_minutes: 10
+
+    # Required claims mapping (JWT claim name -> internal field)
+    required_claims:
+      tenant_id: "tenant_id"  # JWT claim containing tenant ID
+      roles: "roles"          # JWT claim containing user roles
+
+  # Role-based access control (RBAC) settings
+  rbac:
+    # Roles allowed to access /v1/* endpoints (JWT). User needs at least ONE of these.
+    # Must match gateway vocabulary (map IdP realm roles to these names in tokens).
+    user_roles:
+      - "user"
+      - "admin"
+      - "local_admin"
+      - "financial"
+
+    # Roles that count as full admin for /admin/* (JWT admin surface; see handlers)
+    admin_roles:
+      - "admin"
+
+    # Roles for finance/billing endpoints (future use)
+    finance_roles:
+      - "finance_viewer"
+
+# Server configuration
+server:
+  host: "0.0.0.0"
+  port: 8080
+  request_timeout_ms: 45000
+  log_mode: "metadata_only"  # "metadata_only", "redacted", "full"
+
+# Tenants configuration
+# Note: With JWT auth, api_keys are optional (only needed for mode="api_key" or "both")
+tenants:
+  - id: "tenant_a"
+    api_keys:  # Optional when using JWT
+      - "tenant_a_api_key_123"
+    allowed_models:
+      - "gpt-4o-mini"
+      - "claude-3-5-sonnet"
+    routing:
+      strategy: "smart"
+      fallback:
+        enabled: true
+        timeout_ms: 5000
+        max_attempts: 2
+    rate_limit:
+      rpm: 60
+      burst: 10
+    compliance:
+      retention_days: 90
+      log_mode: "redacted"
+
+  - id: "tenant_b"
+    api_keys:  # Optional when using JWT
+      - "tenant_b_api_key_456"
+    allowed_models:
+      - "gpt-4o-mini"
+    routing:
+      strategy: "round_robin"
+    rate_limit:
+      rpm: 30
+      burst: 5
+
+# Provider configuration
+providers:
+  openai:
+    type: "openai"
+    base_url: "https://api.openai.com/v1"
+    api_key_env: "OPENAI_API_KEY"
+
+  anthropic:
+    type: "anthropic"
+    base_url: "https://api.anthropic.com"
+    api_key_env: "ANTHROPIC_API_KEY"
+
+# Model configuration
+models:
+  - name: "gpt-4o-mini"
+    provider: "openai"
+    pricing:
+      prompt_per_1m: 0.15
+      completion_per_1m: 0.60
+
+  - name: "claude-3-5-sonnet"
+    provider: "anthropic"
+    pricing:
+      prompt_per_1m: 3.00
+      completion_per_1m: 15.00
+
+# Database configuration
+database:
+  max_open_conns: 10
+  max_idle_conns: 5
+
+# ---
+# Example JWT payloads for different scenarios:
+# ---
+
+# 1. Regular user (user role)
+# {
+#   "iss": "https://keycloak.company.com/realms/llm-gateway",
+#   "aud": "llm-gateway",
+#   "sub": "user@company.com",
+#   "exp": 1735689600,
+#   "tenant_id": "tenant_a",
+#   "roles": ["user"]
+# }
+# → Can access: /v1/models, /v1/chat/completions for tenant_a
+# → Cannot access: /admin/*
+
+# 2. Tenant operator (local_admin role; often with tenants[] claim)
+# {
+#   "iss": "https://keycloak.company.com/realms/llm-gateway",
+#   "aud": "llm-gateway",
+#   "sub": "admin@company.com",
+#   "exp": 1735689600,
+#   "tenant_id": "tenant_a",
+#   "roles": ["local_admin"]
+# }
+# → Can access: /v1/*, scoped /admin/* per allowed tenants
+
+# 3. Platform admin (admin role)
+# {
+#   "iss": "https://keycloak.company.com/realms/llm-gateway",
+#   "aud": "llm-gateway",
+#   "sub": "superadmin@company.com",
+#   "exp": 1735689600,
+#   "tenant_id": "platform",
+#   "roles": ["admin"]
+# }
+# → Can access: /v1/*, /admin/tenants/*/* (all tenants)
+# → Bypasses tenant isolation
+
+# ---
+# API Examples:
+# ---
+
+# User endpoint (JWT):
+# curl -H "Authorization: Bearer <jwt>" http://localhost:8080/v1/models
+
+# User endpoint (API key, only if mode="api_key" or "both"):
+# curl -H "X-API-Key: tenant_a_api_key_123" http://localhost:8080/v1/models
+
+# Admin endpoint (JWT):
+# curl -H "Authorization: Bearer <jwt>" http://localhost:8080/admin/tenants/tenant_a/usage/summary
+
+# Admin endpoint (Admin token):
+# curl -H "X-Admin-Token: ${ADMIN_TOKEN}" http://localhost:8080/admin/tenants/tenant_a/usage/summary

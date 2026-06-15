@@ -1,0 +1,59 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Local development
+.env
+.env.local
+.env.*.local
+.DS_Store
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+*.iml
+
+# Build artifacts
+bin/
+dist/
+build/
+*.o
+*.a
+
+# Test files
+*_test.go
+*-test
+coverage.txt
+*.test
+
+# Dependencies
+vendor/
+.gomodcache
+
+# Temporary files
+*.tmp
+tmp/
+temp/
+
+# Documentation (not needed in runtime)
+*.md
+docs/
+
+# Config examples (use actual config at runtime)
+.env.example
+
+# Docker/Compose
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Other
+.versionrc
+LICENSE

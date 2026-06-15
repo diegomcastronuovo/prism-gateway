@@ -1,0 +1,38 @@
+# Binaries
+/gateway
+*.exe
+*.out
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Config
+config.yaml
+!config.example.yaml
+
+# Keys and certificates
+*.pem
+*.key
+*.crt
+*.jwt
+jwks/private*
+
+# Go
+vendor/
+*.sum.bak
+
+# Node
+node_modules/
+.next/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp

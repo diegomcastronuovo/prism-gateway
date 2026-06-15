@@ -1,0 +1,6 @@
+-- 012_pgvector.sql
+BEGIN;
+
+CREATE EXTENSION IF NOT EXISTS vector;
+
+COMMIT;
