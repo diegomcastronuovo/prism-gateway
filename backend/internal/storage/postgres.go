@@ -44,6 +44,7 @@ func jsonbText(v json.RawMessage) interface{} {
 
 // PostgresStorage implements Storage using a Postgres database.
 type PostgresStorage struct {
+	NopStorage // satisfies enterprise-only interface methods not implemented in community
 	db         *sql.DB
 	log        *slog.Logger
 	encService encryption.FieldEncryptionService
@@ -4936,3 +4937,4 @@ func ExpectedTables() []string {
 	sort.Strings(result)
 	return result
 }
+

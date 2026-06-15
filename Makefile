@@ -1,19 +1,20 @@
-.PHONY: help dev build test lint migrate up down logs restart clean
+.PHONY: help dev build test lint up down logs restart clean
 
 help:
 	@echo "PrismGateway — available targets"
 	@echo ""
-	@echo "  up        Start all services (gateway + postgres + redis)"
+	@echo "  up        Start all services (gateway + postgres + redis + frontend)"
 	@echo "  down      Stop all services"
 	@echo "  logs      Tail gateway logs"
 	@echo "  restart   Restart gateway container"
-	@echo "  clean     Stop and remove volumes"
+	@echo "  clean     Stop and remove all volumes (destructive)"
 	@echo ""
 	@echo "  build     Build gateway binary (backend/)"
 	@echo "  test      Run backend tests"
 	@echo "  lint      Run golangci-lint"
-	@echo "  migrate   Run DB migrations"
-	@echo "  dev       Run gateway locally (requires postgres + redis)"
+	@echo "  dev       Run gateway locally (requires postgres + redis running)"
+	@echo ""
+	@echo "  Note: DB migrations run automatically on gateway startup."
 
 up:
 	docker compose up -d
@@ -39,5 +40,5 @@ test:
 lint:
 	cd backend && golangci-lint run ./...
 
-migrate:
-	cd backend && go run ./cmd/migrate
+dev:
+	cd backend && go run ./cmd/gateway -config config.yaml
