@@ -20,16 +20,11 @@ export function Topbar({ sidebarCollapsed = false }: TopbarProps) {
       )}
     >
       <div className="container mx-auto flex h-full items-center gap-6 px-4">
-        {!WHITE_LABEL ? (
-          <div className="flex items-center gap-1">
-            <img src="/logo.svg" alt="Logo" className="h-16 w-auto mt-4" />
-            <span className="text-4xl font-semibold tracking-wide">arkana</span>
-          </div>
-        ) : BRAND_NAME ? (
-          <div className="flex items-center gap-1">
-            <span className="text-2xl font-semibold tracking-wide">{BRAND_NAME}</span>
-          </div>
-        ) : null}
+        <div className="flex items-center gap-1">
+          <span className="text-xl font-semibold tracking-wide">
+            {BRAND_NAME || 'PrismGateway'}
+          </span>
+        </div>
 
         <div className="ml-auto flex items-center">
           <UserMenu />

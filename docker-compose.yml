@@ -23,7 +23,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3010:3000"
     environment:
       - GATEWAY_BASE_URL=http://gateway:8080
       - GATEWAY_ADMIN_API_KEY=${GATEWAY_ADMIN_API_KEY:-change-me-admin-key}

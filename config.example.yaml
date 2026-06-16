@@ -35,9 +35,7 @@ tenants:
   - id: default
     name: Default Tenant
     api_keys:
-      - key: change-me-before-using
-        name: default-key
-        scopes: [inference]
+      - change-me-before-using
     selection:
       strategy: latency_based   # round_robin | latency_based | cost_based | header_based | smart
       route_groups:

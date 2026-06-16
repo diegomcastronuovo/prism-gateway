@@ -9,8 +9,6 @@ import { APP_NAME, ROUTES } from '@/lib/utils/constants'
 
 export default function LoginPage() {
   const { login, isAuthenticated, isLoading } = useAuth()
-  const [isRedirectingKeycloak, setIsRedirectingKeycloak] = useState(false)
-  const [isRedirectingCognito, setIsRedirectingCognito] = useState(false)
   const [isMocking, setIsMocking] = useState(false)
   const router = useRouter()
 
@@ -39,46 +37,12 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/40">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-20 w-28 flex items-center justify-center">
-            <img src="/logo.svg" alt="AI Gateway Logo" className="h-full w-full" />
-          </div>
-          <CardTitle className="text-2xl text-center">{"arkana"}</CardTitle>
+          <CardTitle className="text-2xl text-center">{APP_NAME}</CardTitle>
           <CardDescription className="text-center">
-            AI Control Plane - Sign in to continue
+            LLM Gateway — Sign in to continue
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-3">
-            <Button
-              className="w-full"
-              variant="outline"
-              loading={isRedirectingKeycloak}
-              loadingText="Redirecting..."
-              onClick={() => {
-                if (isRedirectingKeycloak) return
-                setIsRedirectingKeycloak(true)
-                login('keycloak')
-              }}
-            >
-              Continue with Keycloak
-            </Button>
-            
-            
-            
-            
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                Development Only
-              </span>
-            </div>
-          </div>
-
           <Button
             className="w-full"
             loading={isMocking}
@@ -94,7 +58,7 @@ export default function LoginPage() {
           </Button>
 
           <p className="text-center text-xs text-muted-foreground">
-            Use mock session for local development without Keycloak.
+            For production use, configure an OIDC provider in settings.
           </p>
         </CardContent>
       </Card>
