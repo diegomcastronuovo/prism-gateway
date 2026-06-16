@@ -93,6 +93,10 @@ curl http://localhost:8080/healthz
 
 ### 4. Send your first request
 
+Configure the model in tenant using the frontend.
+Tenants -> (default) -> Tenant Configuration -> Routing Edit -> Allowed Models
+For 1 model you can use simple "Round Robin" routing strategy.
+
 ```bash
   curl http://localhost:8080/v1/chat/completions \
   -H "X-API-Key: Bearer your-api-key" \
