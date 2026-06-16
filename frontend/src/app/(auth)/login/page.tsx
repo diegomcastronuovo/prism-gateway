@@ -54,11 +54,11 @@ export default function LoginPage() {
               setIsMocking(false)
             }}
           >
-            Continue with Mock Session
+            Sign in
           </Button>
 
           <p className="text-center text-xs text-muted-foreground">
-            For production use, configure an OIDC provider in settings.
+            To use SSO, configure an OIDC provider in Settings → Auth.
           </p>
         </CardContent>
       </Card>
