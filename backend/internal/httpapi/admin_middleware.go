@@ -404,10 +404,20 @@ func AdminTenantIsolationMiddleware(log *slog.Logger) func(http.Handler) http.Ha
 				return
 			}
 
-			// API key auth: enforce tenant match
+			// API key auth: enforce tenant match only for non-admin-scoped keys.
+			// Keys with admin_read or admin_write have global access (same as admin_token).
 			if authType != "api_key" {
 				next.ServeHTTP(w, r)
 				return
+			}
+
+			scopes := auth.ScopesFromContext(r.Context())
+			for _, s := range scopes {
+				if s == "admin_read" || s == "admin_write" {
+					log.DebugContext(ctx, "admin bypass tenant validation", "reason", "admin_scoped_api_key")
+					next.ServeHTTP(w, r)
+					return
+				}
 			}
 
 			pathTenantID := r.PathValue("tenant_id")

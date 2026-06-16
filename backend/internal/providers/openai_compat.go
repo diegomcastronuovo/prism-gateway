@@ -293,6 +293,9 @@ func (o *openAICompat) chatCompletionStream(ctx context.Context, req ChatRequest
 		return o.responsesAPIStream(ctx, req)
 	}
 	req.Stream = true
+	if req.ProviderModelID != "" {
+		req.Model = req.ProviderModelID
+	}
 
 	body, err := json.Marshal(req)
 	if err != nil {
@@ -383,6 +386,9 @@ func (o *openAICompat) chatCompletion(ctx context.Context, req ChatRequest) (*Ch
 		return o.responsesAPICompletion(ctx, req)
 	}
 	req.Stream = false
+	if req.ProviderModelID != "" {
+		req.Model = req.ProviderModelID
+	}
 
 	body, err := json.Marshal(req)
 	if err != nil {

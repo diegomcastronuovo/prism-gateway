@@ -23,6 +23,7 @@ auth:
 dynamic_config:
   enabled: true
   cache_ttl_ms: 5000
+  seed_mode: if_empty
 
 circuit_breaker:
   backend: in_memory   # in_memory | redis
@@ -54,22 +55,36 @@ tenants:
     logging:
       mode: metadata_only   # disabled | metadata_only | redacted | full
 
+providers:
+  openai:
+    base_url: https://api.openai.com/v1
+    api_key_env: OPENAI_API_KEY
+  anthropic:
+    base_url: https://api.anthropic.com
+    api_key_env: ANTHROPIC_API_KEY
+  gemini:
+    base_url: https://generativelanguage.googleapis.com/v1beta
+    api_key_env: GEMINI_API_KEY
+  xai:
+    base_url: https://api.x.ai/v1
+    api_key_env: XAI_API_KEY
+
 models:
   - name: openai/gpt-4o-mini
     provider: openai
-    model: gpt-4o-mini
+    provider_model_id: gpt-4o-mini
     pricing:
       prompt_per_1m: 0.15
       completion_per_1m: 0.60
   - name: anthropic/claude-3-haiku-20240307
     provider: anthropic
-    model: claude-3-haiku-20240307
+    provider_model_id: claude-3-haiku-20240307
     pricing:
       prompt_per_1m: 0.25
       completion_per_1m: 1.25
   - name: google/gemini-1.5-flash
     provider: gemini
-    model: gemini-1.5-flash
+    provider_model_id: gemini-1.5-flash
     pricing:
       prompt_per_1m: 0.075
       completion_per_1m: 0.30

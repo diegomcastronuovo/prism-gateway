@@ -94,12 +94,11 @@ curl http://localhost:8080/healthz
 ### 4. Send your first request
 
 ```bash
-curl http://localhost:8080/v1/chat/completions \
-  -H "Authorization: Bearer your-api-key" \
+  curl http://localhost:8080/v1/chat/completions \
+  -H "X-API-Key: Bearer your-api-key" \
   -H "X-Tenant-ID: default" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "auto",
     "messages": [{"role": "user", "content": "Hello!"}]
   }'
 ```
